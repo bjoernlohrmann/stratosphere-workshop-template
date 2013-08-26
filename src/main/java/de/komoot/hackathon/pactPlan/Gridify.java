@@ -2,7 +2,6 @@ package de.komoot.hackathon.pactPlan;
 
 import java.util.List;
 
-import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 
 import de.komoot.hackathon.Grid;
