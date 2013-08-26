@@ -15,7 +15,7 @@ public class NodesInAreas implements PlanAssemblerDescription {
 
 	// schema: GEO_ID, GEO_OBJECT, ENVELOPE, CELL_ID
 	public static final int GEO_ID_COLUMN = 0;
-	public static final int CELL_ID_COLUMN = 3;
+	public static final int CELL_ID_COLUMN = 2;
 
 	@Override
 	public Plan getPlan(String... args) {

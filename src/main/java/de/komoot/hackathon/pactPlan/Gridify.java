@@ -13,7 +13,7 @@ public class Gridify extends MapStub {
 	private Grid grid;
 	
 	public Gridify() {
-		grid = new Grid(0.1d);
+		grid = new Grid(1.0);
 	}
 	
 	@Override
@@ -27,6 +27,7 @@ public class Gridify extends MapStub {
 		{
 			PactRecord outputRecord = new PactRecord();
 			outputRecord.addField(record.getField(0, PactString.class));
+			outputRecord.addField(record.getField(1, PactGeometry.class));
 			outputRecord.addField(new PactString(id));
 			
 			out.collect(outputRecord);
