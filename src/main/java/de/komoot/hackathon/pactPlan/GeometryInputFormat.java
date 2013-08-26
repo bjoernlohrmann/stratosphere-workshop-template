@@ -9,8 +9,8 @@ import eu.stratosphere.pact.common.type.base.PactString;
 
 public class GeometryInputFormat extends TextInputFormat
 {
-	PactString id;
-	PactString geometry;
+	PactString reusableId = new PactString();
+	PactString reusableGeometryStr = new PactString();
 	
 	
 	@Override
@@ -41,32 +41,31 @@ public class GeometryInputFormat extends TextInputFormat
 		}
 		
 		
-		findStringValue(str,"id",id);
-		if(id == null)
+		PactString id = findStringValue(str,"id",reusableId);
+		if (id == null)
 			throw new RuntimeException("Could not parse id attribute");
-		findStringValue(str,"geometry",geometry);
-		if(geometry == null)
+		PactString geometryStr = findStringValue(str,"geometry",reusableGeometryStr);
+		if(geometryStr == null)
 			throw new RuntimeException("Could not parse geometry attribute");
 		
 		target.clear();
 		target.addField(id);
-		target.addField(new PactGeometry(geometry.toString()));
+		target.addField(new PactGeometry(geometryStr.toString()));
 		return true;
 		
 	}
 	
-	public static void findStringValue(PactString text, String attribut, PactString target){
+	public static PactString findStringValue(PactString text, String attribut, PactString target){
 		int startPosition = text.find("\""+attribut+"\":\"");
-		if(startPosition == -1){
-			target = null;
-			return;
+		if(startPosition == -1) {
+			return null;
 		}
 		startPosition += 4 + attribut.length();
 		int endPosition = text.find("\"",startPosition);
 		if(endPosition == -1){
-			target = null;
-			return;
+			return null;
 		}
 		text.substring(target,startPosition,endPosition);
+		return target;
 	}
 }
