@@ -35,13 +35,20 @@ public class Grid {
 	}
 
 	public List<String> getIdsForGeometry(Geometry g) {
-		List<String> ids = new ArrayList<>();
 		Envelope ge = g.getEnvelopeInternal();
+		return getIdsForGeometry(ge);		
+	}
+	
+	public List<String> getIdsForGeometry(Envelope ge)
+	{
+		List<String> ids = new ArrayList<>();
+		
 		for(IdEnvelope e : envelopes) {
 			if(ge.intersects(e)) {
 				ids.add(e.getId());
 			}
 		}
+		
 		return ids;
 	}
 
