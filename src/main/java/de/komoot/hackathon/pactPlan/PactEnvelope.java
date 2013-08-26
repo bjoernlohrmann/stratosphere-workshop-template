@@ -71,6 +71,8 @@ public class PactEnvelope implements Value{
 		minY = in.readDouble();		
 	}
 	
-	
-
+	public Envelope getEnvelope()
+	{
+		return new Envelope(minX, maxX, minY, maxY);
+	}
 }
