@@ -8,7 +8,6 @@ import eu.stratosphere.pact.common.contract.ReduceContract;
 import eu.stratosphere.pact.common.io.RecordOutputFormat;
 import eu.stratosphere.pact.common.plan.Plan;
 import eu.stratosphere.pact.common.plan.PlanAssemblerDescription;
-import eu.stratosphere.pact.common.type.base.PactInteger;
 import eu.stratosphere.pact.common.type.base.PactList;
 import eu.stratosphere.pact.common.type.base.PactString;
 
@@ -20,13 +19,11 @@ public class NodesInAreas implements PlanAssemblerDescription {
 
 	@Override
 	public Plan getPlan(String... args) {
-		if (args.length != 4) {
-			throw new IllegalArgumentException("illegal number of arguments");
-		}
-		int dop = Integer.valueOf(args[0]);
-		String nodesPath = args[1];
-		String areasPath = args[2];
-		String outputPath = args[3];
+
+		int dop = (args.length > 0 ? Integer.parseInt(args[0]) : 1);
+		String nodesPath = (args.length > 1 ? args[1] : "");
+		String areasPath = (args.length > 2 ? args[2] : "");
+		String outputPath = (args.length > 3 ? args[3] : "");
 
 		FileDataSource nodes = new FileDataSource(GeometryInputFormat.class,
 				nodesPath, "Nodes");
@@ -59,7 +56,7 @@ public class NodesInAreas implements PlanAssemblerDescription {
 				outputPath, reduceNodes, "Sink");
 		RecordOutputFormat.configureRecordFormat(output).recordDelimiter('\n')
 				.fieldDelimiter(',').lenient(true).field(PactString.class, 0)
-				.field(PactList.class, 1);
+				.field(PactListImpl.class, 1);
 
 		Plan plan = new Plan(output);
 		plan.setDefaultParallelism(dop);
