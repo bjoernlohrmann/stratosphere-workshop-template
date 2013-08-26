@@ -13,42 +13,40 @@ import eu.stratosphere.pact.common.type.Value;
 
 public class PactGeometry implements Value {
 
-	private Geometry geo;
+	private byte[] bytes;
 
 	private final WKBReader reader = new WKBReader();
 
 	private final WKBWriter writer = new WKBWriter();
 
-	public PactGeometry(Geometry geo) {
-		this.geo = geo;
+	public PactGeometry(byte[] bytes) {
+		this.bytes = bytes;
+	}
+
+	public PactGeometry(String hexGeo) {
+		this.bytes = WKBReader.hexToBytes(hexGeo);
 	}
 
 	public PactGeometry() {
 	}
 
-	public Geometry getGeo() {
-		return geo;
+	public Geometry getGeo() throws ParseException {
+		return this.reader.read(bytes);
 	}
 
 	public void setGeo(Geometry geo) {
-		this.geo = geo;
+		this.bytes = this.writer.write(geo);
 	}
 
 	@Override
 	public void write(DataOutput out) throws IOException {
-		byte[] bytes = this.writer.write(this.geo);
-		out.writeInt(bytes.length);
-		out.write(bytes);
+		out.writeInt(this.bytes.length);
+		out.write(this.bytes);
 	}
 
 	@Override
 	public void read(DataInput in) throws IOException {
-		byte[] bytes = new byte[in.readInt()];
-		in.readFully(bytes);
-		try {
-			this.geo = this.reader.read(bytes);
-		} catch (ParseException e) {
-			throw new IOException(e);
-		}
+		this.bytes = new byte[in.readInt()];
+		in.readFully(this.bytes);
 	}
 }
