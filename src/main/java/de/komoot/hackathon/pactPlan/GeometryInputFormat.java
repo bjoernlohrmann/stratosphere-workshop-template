@@ -46,7 +46,7 @@ public class GeometryInputFormat extends TextInputFormat
 		String geom = textAsString.substring(0, textAsString.indexOf("\""));
 		
 		target.setField(target.getNumFields()-1, new PactString(id));
-		target.addField(new PactString(geom));
+		target.addField(new PactGeometry(geom));
 		
 		return result;
 	}
