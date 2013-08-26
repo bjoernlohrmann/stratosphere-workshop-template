@@ -8,12 +8,13 @@ import eu.stratosphere.pact.common.contract.ReduceContract;
 import eu.stratosphere.pact.common.plan.Plan;
 import eu.stratosphere.pact.common.plan.PlanAssemblerDescription;
 import eu.stratosphere.pact.common.type.base.PactInteger;
+import eu.stratosphere.pact.common.type.base.PactString;
 
 public class NodesInAreas implements PlanAssemblerDescription {
 
-	// schema: GEO_ID, GEO_OBJECT, BOUND_X1, BOUND_X2, BOUND_Y1, BOUND_Y2, CELL_ID 
+	// schema: GEO_ID, GEO_OBJECT, ENVELOPE, CELL_ID 
 	public static final int GEO_ID_COLUMN = 0;
-	public static final int CELL_ID_COLUMN = 6;
+	public static final int CELL_ID_COLUMN = 3;
 	
 	@Override
 	public Plan getPlan(String... args) {
@@ -48,7 +49,7 @@ public class NodesInAreas implements PlanAssemblerDescription {
 						.name("Intersect Nodes and Areas in Matching Cells").build();
 		
 		ReduceContract reduceNodes = 
-				ReduceContract.builder(NodesReducer.class, PactInteger.class, GEO_ID_COLUMN)
+				ReduceContract.builder(NodesReducer.class, PactString.class, GEO_ID_COLUMN)
 						.input(matchCells).name("Reduce by nodeID").build();
 		
 		FileDataSink output = new FileDataSink(NodesInAreasOutputFormat.class, outputPath, reduceNodes, "Sink");
