@@ -20,7 +20,7 @@ public class CsvGeometriesMatcher {
 	/** automatically generated Logger statement */
 	private final static org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(CsvGeometriesMatcher.class);
 	/** pattern of chars that are safe for use in the csv file. */
-	private final static Pattern SAFECHARS = Pattern.compile("[\\w ]");
+	private final static Pattern BADCHARS = Pattern.compile("[\\w \\-_]");
 	private final ObjectMapper mapper;
 
 	private List<JsonGeometryEntity<Geometry>> nodes;
@@ -60,7 +60,7 @@ public class CsvGeometriesMatcher {
 			String name = e1.getTags().get("name");
 			if(name != null) {
 				targetFile.write('"');
-				targetFile.write(SAFECHARS.matcher(name).replaceAll(""));
+				targetFile.write(BADCHARS.matcher(name).replaceAll(""));
 				targetFile.write('"');
 			}
 			for(JsonGeometryEntity<?> e2 : entities2) {
