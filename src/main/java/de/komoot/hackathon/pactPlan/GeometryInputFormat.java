@@ -1,18 +1,12 @@
 package de.komoot.hackathon.pactPlan;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.komoot.hackathon.openstreetmap.GeometryModule;
-import de.komoot.hackathon.openstreetmap.JsonGeometryEntity;
 import eu.stratosphere.pact.common.io.TextInputFormat;
 import eu.stratosphere.pact.common.type.PactRecord;
 import eu.stratosphere.pact.common.type.base.PactString;
-import eu.stratosphere.pact.example.wordcount.WordCount.TokenizeLine;
 
 public class GeometryInputFormat extends TextInputFormat
 {
@@ -25,6 +19,7 @@ public class GeometryInputFormat extends TextInputFormat
 		mapper.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
 	}
 	
+	@Override
 	public boolean readRecord(PactRecord target, byte[] bytes, int offset, int numBytes)
 	{
 		boolean result = super.readRecord(target, bytes, offset, numBytes);
