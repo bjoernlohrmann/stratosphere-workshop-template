@@ -17,6 +17,9 @@ We want to work with geographic data. Download http://download.geofabrik.de/euro
 `mvn -U clean compile exec:java -Dexec.mainClass="de.komoot.hackathon.PfbToJsonRecordsExporter" -Dexec.args="/path/to/bremen-latest.osm.pbf /targetdir/"`
 
 
+Verification data can be found at http://dev.komoot.de/workshop/ The csv file contains all matches in the format: `"Way-id",<ignore>,"Area-id-1,"Area-id-2",...`
+
+
 ## Questions and Issues ##
   -  Q: maven cannot download stratosphere packages (eu.stratospere ...)
     -  A: check your $HOME/.m2/settings.xml: It should not contain a line `<mirrorOf>*</mirrorOf>` but `<mirrorOf>central</mirrorOf>`.
