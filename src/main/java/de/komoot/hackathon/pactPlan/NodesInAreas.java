@@ -22,6 +22,7 @@ public class NodesInAreas implements PlanAssemblerDescription {
 	public static final int AREA_ID_COLUMN = 2;
 	// Reduce: NODE_ID, OPT_NAME, AREA_IDS
 	public static final int AREA_IDS_COLUMN = 2;
+	public static final String GRIDIFY_CELL_WIDTH = "GRIDIFY_CELL_WIDTH";
 	
 	@Override
 	public Plan getPlan(String... args) {
@@ -31,6 +32,7 @@ public class NodesInAreas implements PlanAssemblerDescription {
 		String waysPath = (args.length > 2 ? args[2] : "");
 		String areasPath = (args.length > 3 ? args[3] : "");
 		String outputPath = (args.length > 4 ? args[4] : "");
+		String cellWidth = (args.length > 5) ? args[5] : "0.01";
 
 		FileDataSource nodes = new FileDataSource(GeometryInputFormat.class,
 				nodesPath, "Nodes");
@@ -44,18 +46,21 @@ public class NodesInAreas implements PlanAssemblerDescription {
 
 		MapContract gridifyNodes = MapContract.builder(Gridify.class)
 				.input(boundNodes).name("Gridify Nodes").build();
+		gridifyNodes.getParameters().setString(GRIDIFY_CELL_WIDTH, cellWidth);
 		
 		MapContract boundWays = MapContract.builder(BoundingBox.class)
 				.input(ways).name("Add BoundingBox for Ways").build();
 
 		MapContract gridifyWays = MapContract.builder(Gridify.class)
 				.input(boundWays).name("Gridify Ways").build();
+		gridifyWays.getParameters().setString(GRIDIFY_CELL_WIDTH, cellWidth);
 
 		MapContract boundAreas = MapContract.builder(BoundingBox.class)
 				.input(areas).name("Add BoundingBox for Areas").build();
 
 		MapContract gridifyAreas = MapContract.builder(Gridify.class)
 				.input(boundAreas).name("Gridify Areas").build();
+		gridifyAreas.getParameters().setString(GRIDIFY_CELL_WIDTH, cellWidth);
 
 		MatchContract matchCellsOfNodes = MatchContract
 				.builder(IntersectMatcher.class, PactString.class,

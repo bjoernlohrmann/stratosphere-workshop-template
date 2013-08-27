@@ -1,5 +1,7 @@
 package de.komoot.hackathon.pactPlan;
 
+import org.apache.log4j.Logger;
+
 import eu.stratosphere.pact.common.stubs.Collector;
 import eu.stratosphere.pact.common.stubs.MatchStub;
 import eu.stratosphere.pact.common.type.PactRecord;
@@ -8,6 +10,8 @@ import eu.stratosphere.pact.common.type.base.PactString;
 import static de.komoot.hackathon.pactPlan.NodesInAreas.*;
 
 public class IntersectMatcher extends MatchStub {
+
+	private static final Logger LOG = Logger.getLogger(IntersectMatcher.class);
 
 	private PactGeometry reusableLeftGeometry;
 	private PactGeometry reusableAreaGeometry;
@@ -38,19 +42,21 @@ public class IntersectMatcher extends MatchStub {
 
 		if (leftGeometry.getGeo().intersects(areaGeometry.getGeo())) {
 			PactRecord outRecord = new PactRecord(3);
-			outRecord.setField(ID_COLUMN, leftCell.getField(ID_COLUMN, this.leftID));
-			outRecord.setField(OPT_NAME_COLUMN, leftCell.getField(OPT_NAME_COLUMN, this.optName));
-			outRecord.setField(AREA_ID_COLUMN, cellWithArea.getField(ID_COLUMN, this.areaID));
+			outRecord.setField(ID_COLUMN,
+					leftCell.getField(ID_COLUMN, this.leftID));
+			outRecord.setField(OPT_NAME_COLUMN,
+					leftCell.getField(OPT_NAME_COLUMN, this.optName));
+			outRecord.setField(AREA_ID_COLUMN,
+					cellWithArea.getField(ID_COLUMN, this.areaID));
 			out.collect(outRecord);
 			successfulMatches++;
 		}
 	}
 
 	public void close() {
-		System.out
-				.println(String
-						.format("Match attempts: % d | Successful Matches: %d | Fraction of successful matches: %f",
-								matchAttempts, successfulMatches,
-								((double) successfulMatches) / matchAttempts));
+		LOG.info(String
+				.format("Match attempts: % d | Successful Matches: %d | Fraction of successful matches: %f",
+						matchAttempts, successfulMatches,
+						((double) successfulMatches) / matchAttempts));
 	}
 }

@@ -2,7 +2,10 @@ package de.komoot.hackathon.pactPlan;
 
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import de.komoot.hackathon.Grid;
+import eu.stratosphere.nephele.configuration.Configuration;
 import eu.stratosphere.pact.common.stubs.Collector;
 import eu.stratosphere.pact.common.stubs.MapStub;
 import eu.stratosphere.pact.common.type.PactRecord;
@@ -11,6 +14,8 @@ import eu.stratosphere.pact.common.type.base.PactString;
 import static de.komoot.hackathon.pactPlan.NodesInAreas.*;
 
 public class Gridify extends MapStub {
+
+	private static final Logger LOG = Logger.getLogger(Gridify.class);
 
 	private Grid grid;
 
@@ -23,7 +28,6 @@ public class Gridify extends MapStub {
 	int totalOutputTuples = 0;
 
 	public Gridify() {
-		grid = new Grid(0.01);
 		reusableEnvelope = new PactEnvelope();
 	}
 
@@ -66,8 +70,15 @@ public class Gridify extends MapStub {
 		if (type == null) {
 			type = "unknown";
 		}
-		System.out.println(String.format(
+		LOG.info(String.format(
 				"gridify type: %s | input tuples: %d | output tuples: %d",
 				type, totalInputTuples, totalOutputTuples));
+	}
+
+	public void open(Configuration config) {
+		double cellWidth = Double.parseDouble(config.getString(
+				NodesInAreas.GRIDIFY_CELL_WIDTH, "0.01"));
+		LOG.info("Creating grid with cell width " + cellWidth);
+		this.grid = new Grid(cellWidth);
 	}
 }
