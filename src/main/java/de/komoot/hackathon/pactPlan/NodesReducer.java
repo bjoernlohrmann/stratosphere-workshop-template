@@ -5,28 +5,31 @@ import java.util.Iterator;
 import eu.stratosphere.pact.common.stubs.Collector;
 import eu.stratosphere.pact.common.stubs.ReduceStub;
 import eu.stratosphere.pact.common.type.PactRecord;
-import eu.stratosphere.pact.common.type.base.PactList;
 import eu.stratosphere.pact.common.type.base.PactString;
+
+import static de.komoot.hackathon.pactPlan.NodesInAreas.*;
 
 public class NodesReducer extends ReduceStub {
 
+	private PactListImpl reusableAreas = new PactListImpl();
+	
 	@Override
 	public void reduce(Iterator<PactRecord> records, Collector<PactRecord> out)
 			throws Exception {
 		PactRecord element = null;
-		PactList<PactString> areas = new PactListImpl();
+		reusableAreas.clear();
 		
 		while (records.hasNext()) {
 			element = records.next();
-			areas.add(element.getField(1, PactString.class));						
+			reusableAreas.add(element.getField(AREA_ID_COLUMN, PactString.class));						
 		}
 		
-		PactRecord result = new PactRecord();
 		if(element != null)
 		{
-			result.addField(element.getField(0, PactString.class));
-			result.addField(areas);
-			
+			PactRecord result = new PactRecord();
+			result.addField(element.getField(ID_COLUMN, PactString.class));
+			result.addField(element.getField(OPT_NAME_COLUMN, PactString.class));
+			result.addField(reusableAreas);
 			out.collect(result);
 		}
 	}

@@ -5,18 +5,24 @@ import eu.stratosphere.pact.common.contract.FileDataSource;
 import eu.stratosphere.pact.common.contract.MapContract;
 import eu.stratosphere.pact.common.contract.MatchContract;
 import eu.stratosphere.pact.common.contract.ReduceContract;
-import eu.stratosphere.pact.common.io.RecordOutputFormat;
 import eu.stratosphere.pact.common.plan.Plan;
 import eu.stratosphere.pact.common.plan.PlanAssemblerDescription;
-import eu.stratosphere.pact.common.type.base.PactList;
 import eu.stratosphere.pact.common.type.base.PactString;
 
 public class NodesInAreas implements PlanAssemblerDescription {
 
-	// schema: GEO_ID, GEO_OBJECT, ENVELOPE, CELL_ID
-	public static final int GEO_ID_COLUMN = 0;
-	public static final int CELL_ID_COLUMN = 2;
-
+	// Input/BoundingBox: GEO_ID, OPT_NAME, GEO_OBJECT, ENVELOPE
+	public static final int ID_COLUMN = 0;
+	public static final int OPT_NAME_COLUMN = 1;
+	public static final int GEO_OBJECT_COLUMN = 2;
+	public static final int ENVELOPE_COLUMN = 3;
+	// Gridify: GEO_ID, OPT_NAME, GEO_OBJECT, CELL_ID
+	public static final int CELL_ID_COLUMN = 3;
+	// Intersect: NODE_ID, OPT_NAME, AREA_ID
+	public static final int AREA_ID_COLUMN = 2;
+	// Reduce: NODE_ID, OPT_NAME, AREA_IDS
+	public static final int AREA_IDS_COLUMN = 2;
+	
 	@Override
 	public Plan getPlan(String... args) {
 
@@ -49,14 +55,11 @@ public class NodesInAreas implements PlanAssemblerDescription {
 				.name("Intersect Nodes and Areas in Matching Cells").build();
 
 		ReduceContract reduceNodes = ReduceContract
-				.builder(NodesReducer.class, PactString.class, GEO_ID_COLUMN)
+				.builder(NodesReducer.class, PactString.class, ID_COLUMN)
 				.input(matchCells).name("Reduce by nodeID").build();
 
-		FileDataSink output = new FileDataSink(RecordOutputFormat.class,
+		FileDataSink output = new FileDataSink(NodesInAreasOutputFormat.class,
 				outputPath, reduceNodes, "Sink");
-		RecordOutputFormat.configureRecordFormat(output).recordDelimiter('\n')
-				.fieldDelimiter(',').lenient(true).field(PactString.class, 0)
-				.field(PactListImpl.class, 1);
 
 		Plan plan = new Plan(output);
 		plan.setDefaultParallelism(dop);
