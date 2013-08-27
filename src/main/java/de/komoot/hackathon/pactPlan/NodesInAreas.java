@@ -28,11 +28,14 @@ public class NodesInAreas implements PlanAssemblerDescription {
 
 		int dop = (args.length > 0 ? Integer.parseInt(args[0]) : 1);
 		String nodesPath = (args.length > 1 ? args[1] : "");
-		String areasPath = (args.length > 2 ? args[2] : "");
-		String outputPath = (args.length > 3 ? args[3] : "");
+		String waysPath = (args.length > 2 ? args[2] : "");
+		String areasPath = (args.length > 3 ? args[3] : "");
+		String outputPath = (args.length > 4 ? args[4] : "");
 
 		FileDataSource nodes = new FileDataSource(GeometryInputFormat.class,
 				nodesPath, "Nodes");
+		FileDataSource ways = new FileDataSource(GeometryInputFormat.class,
+				waysPath, "Ways");
 		FileDataSource areas = new FileDataSource(GeometryInputFormat.class,
 				areasPath, "Areas");
 
@@ -41,6 +44,12 @@ public class NodesInAreas implements PlanAssemblerDescription {
 
 		MapContract gridifyNodes = MapContract.builder(Gridify.class)
 				.input(boundNodes).name("Gridify Nodes").build();
+		
+		MapContract boundWays = MapContract.builder(BoundingBox.class)
+				.input(ways).name("Add BoundingBox for Ways").build();
+
+		MapContract gridifyWays = MapContract.builder(Gridify.class)
+				.input(boundWays).name("Gridify Ways").build();
 
 		MapContract boundAreas = MapContract.builder(BoundingBox.class)
 				.input(areas).name("Add BoundingBox for Areas").build();
@@ -48,7 +57,7 @@ public class NodesInAreas implements PlanAssemblerDescription {
 		MapContract gridifyAreas = MapContract.builder(Gridify.class)
 				.input(boundAreas).name("Gridify Areas").build();
 
-		MatchContract matchCells = MatchContract
+		MatchContract matchCellsOfNodes = MatchContract
 				.builder(IntersectMatcher.class, PactString.class,
 						CELL_ID_COLUMN, CELL_ID_COLUMN).input1(gridifyNodes)
 				.input2(gridifyAreas)
@@ -56,12 +65,26 @@ public class NodesInAreas implements PlanAssemblerDescription {
 
 		ReduceContract reduceNodes = ReduceContract
 				.builder(NodesReducer.class, PactString.class, ID_COLUMN)
-				.input(matchCells).name("Reduce by nodeID").build();
+				.input(matchCellsOfNodes).name("Reduce by node ID").build();
 
-		FileDataSink output = new FileDataSink(NodesInAreasOutputFormat.class,
-				outputPath, reduceNodes, "Sink");
+		MatchContract matchCellsOfWays = MatchContract
+				.builder(IntersectMatcher.class, PactString.class,
+						CELL_ID_COLUMN, CELL_ID_COLUMN).input1(gridifyWays)
+				.input2(gridifyAreas)
+				.name("Intersect Ways and Areas in Matching Cells").build();
 
-		Plan plan = new Plan(output);
+		ReduceContract reduceWays = ReduceContract
+				.builder(NodesReducer.class, PactString.class, ID_COLUMN)
+				.input(matchCellsOfWays).name("Reduce by way ID").build();
+		
+		FileDataSink nodesOutput = new FileDataSink(NodesInAreasOutputFormat.class,
+				outputPath, reduceNodes, "Sink for Nodes");
+
+		FileDataSink waysOutput = new FileDataSink(NodesInAreasOutputFormat.class,
+				outputPath, reduceWays, "Sink for Ways");
+		
+		Plan plan = new Plan(nodesOutput);
+		plan.addDataSink(waysOutput);
 		plan.setDefaultParallelism(dop);
 
 		return plan;
@@ -69,7 +92,7 @@ public class NodesInAreas implements PlanAssemblerDescription {
 
 	@Override
 	public String getDescription() {
-		return "dop nodes areas output";
+		return "dop nodes ways areas output";
 	}
 
 }
