@@ -85,7 +85,7 @@
           <archive>
             <manifestEntries>
               <mode>development</mode>
-              <Pact-Assembler-Class>eu.stratosphere.pact.example.wordcount.WordCount</Pact-Assembler-Class>
+              <Pact-Assembler-Class>de.komoot.hackathon.pactPlan.NodesInAreas</Pact-Assembler-Class>
             </manifestEntries>
           </archive>
         </configuration>
