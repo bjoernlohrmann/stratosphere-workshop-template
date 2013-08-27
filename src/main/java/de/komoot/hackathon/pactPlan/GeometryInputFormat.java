@@ -13,6 +13,7 @@ public class GeometryInputFormat extends TextInputFormat
 
 	PactString reusableId = new PactString();
 	PactString reusableGeometryStr = new PactString();
+	PactString reusableNameStr = new PactString();
 	
 	@Override
 	public boolean readRecord(PactRecord target, byte[] bytes, int offset, int numBytes)
@@ -43,31 +44,32 @@ public class GeometryInputFormat extends TextInputFormat
 		}
 		
 		
-		PactString id = findStringValue(str,"id",reusableId);
-		if (id == null)
+		if (!findStringValue(str, "id", reusableId))
 			throw new RuntimeException("Could not parse id attribute");
-		PactString geometryStr = findStringValue(str,"geometry",reusableGeometryStr);
-		if(geometryStr == null)
+		if (!findStringValue(str, "geometry", reusableGeometryStr))
 			throw new RuntimeException("Could not parse geometry attribute");
+		if (!findStringValue(str, "name", reusableNameStr))
+			reusableNameStr.setValue("");
 		
 		target.clear();
-		target.addField(id);
-		target.addField(new PactGeometry(geometryStr.toString()));
+		target.addField(reusableId);
+		target.addField(reusableNameStr);
+		target.addField(new PactGeometry(reusableGeometryStr.toString()));
 		return true;
 		
 	}
 	
-	public static PactString findStringValue(PactString text, String attribut, PactString target){
+	public static boolean findStringValue(PactString text, String attribut, PactString target){
 		int startPosition = text.find("\""+attribut+"\":\"");
 		if(startPosition == -1) {
-			return null;
+			return false;
 		}
 		startPosition += 4 + attribut.length();
 		int endPosition = text.find("\"",startPosition);
 		if(endPosition == -1){
-			return null;
+			return false;
 		}
 		text.substring(target,startPosition,endPosition);
-		return target;
+		return true;
 	}
 }
