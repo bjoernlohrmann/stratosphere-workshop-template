@@ -15,11 +15,13 @@ public class Gridify extends MapStub {
 	private Grid grid;
 
 	private PactEnvelope reusableEnvelope;
-	
-	boolean isArea = false;
-	
+
+	String type = null;
+
+	int totalInputTuples = 0;
+
 	int totalOutputTuples = 0;
-	
+
 	public Gridify() {
 		grid = new Grid(0.01);
 		reusableEnvelope = new PactEnvelope();
@@ -29,19 +31,30 @@ public class Gridify extends MapStub {
 	public void map(PactRecord record, Collector<PactRecord> out)
 			throws Exception {
 
+		totalInputTuples++;
+		if (type == null) {
+			String geoID = record.getField(NodesInAreas.ID_COLUMN,
+					PactString.class).toString();
+			if (geoID.startsWith("A")) {
+				type = "Area";
+			} else if (geoID.startsWith("N")) {
+				type = "Node";
+			} else if (geoID.startsWith("W")) {
+				type = "Way";
+			}
+		}
+
 		PactEnvelope env = record.getField(ENVELOPE_COLUMN, reusableEnvelope);
 
 		List<String> ids = grid.getIdsForGeometry(env.getEnvelope());
 
-		if (ids.size() > 1) {
-			isArea = true;
-		}
-
 		for (String id : ids) {
 			PactRecord outputRecord = new PactRecord();
 			outputRecord.addField(record.getField(ID_COLUMN, PactString.class));
-			outputRecord.addField(record.getField(OPT_NAME_COLUMN, PactString.class));
-			outputRecord.addField(record.getField(GEO_OBJECT_COLUMN, PactGeometry.class));
+			outputRecord.addField(record.getField(OPT_NAME_COLUMN,
+					PactString.class));
+			outputRecord.addField(record.getField(GEO_OBJECT_COLUMN,
+					PactGeometry.class));
 			outputRecord.addField(new PactString(id));
 			totalOutputTuples++;
 			out.collect(outputRecord);
@@ -49,8 +62,12 @@ public class Gridify extends MapStub {
 	}
 
 	public void close() {
+
+		if (type == null) {
+			type = "unknown";
+		}
 		System.out.println(String.format(
-				"gridify type: %s | total output tuples: %d", (isArea) ? "Area"
-						: "Node", totalOutputTuples));
+				"gridify type: %s | input tuples: %d | output tuples: %d",
+				type, totalInputTuples, totalOutputTuples));
 	}
 }
