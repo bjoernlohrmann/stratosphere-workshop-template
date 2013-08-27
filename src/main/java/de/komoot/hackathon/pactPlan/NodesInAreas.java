@@ -31,8 +31,9 @@ public class NodesInAreas implements PlanAssemblerDescription {
 		String nodesPath = (args.length > 1 ? args[1] : "");
 		String waysPath = (args.length > 2 ? args[2] : "");
 		String areasPath = (args.length > 3 ? args[3] : "");
-		String outputPath = (args.length > 4 ? args[4] : "");
-		String cellWidth = (args.length > 5) ? args[5] : "0.01";
+		String outputPathNodes = (args.length > 4 ? args[4] : "");
+		String outputPathWays = (args.length > 5 ? args[5] : "");
+		String cellWidth = (args.length > 6) ? args[6] : "0.01";
 
 		FileDataSource nodes = new FileDataSource(GeometryInputFormat.class,
 				nodesPath, "Nodes");
@@ -83,10 +84,10 @@ public class NodesInAreas implements PlanAssemblerDescription {
 				.input(matchCellsOfWays).name("Reduce by way ID").build();
 		
 		FileDataSink nodesOutput = new FileDataSink(NodesInAreasOutputFormat.class,
-				outputPath, reduceNodes, "Sink for Nodes");
+				outputPathNodes, reduceNodes, "Sink for Nodes");
 
 		FileDataSink waysOutput = new FileDataSink(NodesInAreasOutputFormat.class,
-				outputPath, reduceWays, "Sink for Ways");
+				outputPathWays, reduceWays, "Sink for Ways");
 		
 		Plan plan = new Plan(nodesOutput);
 		plan.addDataSink(waysOutput);
