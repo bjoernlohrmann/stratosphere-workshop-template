@@ -1,73 +1,90 @@
 package de.komoot.hackathon;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Simple Regular grid implementation
- *
+ * 
  * @author jan
  */
 public class Grid {
-	/** automatically generated Logger statement */
-	private final static org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(Grid.class);
-	List<IdEnvelope> envelopes = new ArrayList<>();
+
+	private double cellWidth;
+
+	private int cellsPerGridLine;
+	private int cellsPerGridColumn;
 
 	/**
 	 * Creates a new grid for WGS84 coordinates with the given cell width
-	 *
-	 * @param cellWidth width of a cell in degrees
+	 * 
+	 * @param cellWidth
+	 *            width of a cell in degrees
 	 */
 	public Grid(double cellWidth) {
-		double x = -180;
-		while(x < 180) {
-			double y = -90;
-			while(y < 90) {
-				String id = x + ":" + y;
-				envelopes.add(new IdEnvelope(x, x + cellWidth, y, y + cellWidth, id));
-				y += cellWidth;
-			}
-			x += cellWidth;
+		this.cellsPerGridColumn = (int) (180.0 / cellWidth);
+		
+		if ((180.0 / cellWidth) != this.cellsPerGridColumn) {
+			throw new IllegalArgumentException(
+					"Grid width/height is not a multiple cell width!");
 		}
+
+		this.cellsPerGridLine = (int) (360.0 / cellWidth);
+		
+		this.cellWidth = cellWidth;
 	}
 
 	public List<String> getIdsForGeometry(Geometry g) {
 		Envelope ge = g.getEnvelopeInternal();
-		return getIdsForGeometry(ge);		
+		return getIdsForGeometry(ge);
 	}
-	
-	public List<String> getIdsForGeometry(Envelope ge)
-	{
-		List<String> ids = new ArrayList<>();
-		
-		for(IdEnvelope e : envelopes) {
-			if(ge.intersects(e)) {
-				ids.add(e.getId());
+
+	public List<String> getIdsForGeometry(Envelope ge) {
+		LinkedList<String> ids = new LinkedList<String>();
+
+		Cell upperLeftCell = toCell(ge.getMinX(), ge.getMinY());
+		Cell lowerRightCell = toCell(ge.getMaxX(), ge.getMaxY());
+
+		int nextCellY = upperLeftCell.y;
+		while (nextCellY <= lowerRightCell.y) {
+			int nextCellX = upperLeftCell.x;
+
+			while (nextCellX <= lowerRightCell.x) {
+				Cell nextCell = new Cell(nextCellX, nextCellY);
+				ids.add(nextCell.toString());
+				nextCellX++;
 			}
+			nextCellY++;
 		}
-		
+
 		return ids;
 	}
 
-	public List<IdEnvelope> getEnvelopes() {
-		return envelopes;
+	private Cell toCell(double wgs84XCoordinate, double wgs84YCoordinate) {
+		int cellX = ((int) (Math.abs(-180.0 - wgs84XCoordinate) / cellWidth)) % cellsPerGridLine;
+		int cellY = ((int) (Math.abs(-90.0 - wgs84YCoordinate) / cellWidth)) % cellsPerGridColumn;
+
+		return new Cell(cellX, cellY);
 	}
 
-	class IdEnvelope extends Envelope {
-		private final String id;
+	private class Cell {
+		int x;
+		int y;
 
-		IdEnvelope(double x1, double x2, double y1, double y2, String id) {
-			super(x1, x2, y1, y2);
-			this.id = id;
+		public Cell(int x, int y) {
+			this.x = x;
+			this.y = y;
 		}
 
-		public String getId() {
-			return id;
+		public int getCellIndex() {
+			return y * cellsPerGridLine + x;
+		}
+
+		public String toString() {
+			return Integer.toString(getCellIndex());
 		}
 	}
 }
-
-

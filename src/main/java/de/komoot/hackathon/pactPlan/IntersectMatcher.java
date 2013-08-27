@@ -12,6 +12,9 @@ public class IntersectMatcher extends MatchStub {
 	private PactString leftID;
 	private PactString areaID;
 
+	int matchAttempts = 0;
+	int successfulMatches = 0;
+
 	public IntersectMatcher() {
 		this.reusableLeftGeometry = new PactGeometry();
 		this.reusableAreaGeometry = new PactGeometry();
@@ -22,6 +25,7 @@ public class IntersectMatcher extends MatchStub {
 	@Override
 	public void match(PactRecord leftCell, PactRecord cellWithArea,
 			Collector<PactRecord> out) throws Exception {
+		matchAttempts++;
 
 		PactGeometry leftGeometry = leftCell.getField(1,
 				this.reusableLeftGeometry);
@@ -33,6 +37,15 @@ public class IntersectMatcher extends MatchStub {
 			outRecord.setField(0, leftCell.getField(0, this.leftID));
 			outRecord.setField(1, cellWithArea.getField(0, this.areaID));
 			out.collect(outRecord);
+			successfulMatches++;
 		}
+	}
+
+	public void close() {
+		System.out
+				.println(String
+						.format("Match attempts: % d | Successful Matches: %d | Fraction of successful matches: %f",
+								matchAttempts, successfulMatches,
+								((double) successfulMatches) / matchAttempts));
 	}
 }
